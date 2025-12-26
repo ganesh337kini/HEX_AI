@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> - Strategic Hex Game</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <header class="header">
+      <div class="header-content">
+        <h1 class="logo">
+          <span class="logo-hex">⬡</span>
+          HEX AI
+        </h1>
+        <p class="subtitle">Strategic Board Game with Intelligent AI</p>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="game-panel">
+        <div class="controls-panel">
+          <div class="control-group">
+            <label for="boardSize">Board Size</label>
+            <select id="boardSize" class="select-input">
+              <option value="5">5×5 (Quick)</option>
+              <option value="7" selected>7×7 (Classic)</option>
+              <option value="9">9×9 (Expert)</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label for="gameMode">Game Mode</label>
+            <select id="gameMode" class="select-input">
+              <option value="human-vs-ai" selected>Human vs AI</option>
+              <option value="human-vs-human">Human vs Human</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label for="difficulty">AI Difficulty</label>
+            <select id="difficulty" class="select-input">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+
+          <button id="newGameBtn" class="btn btn-primary">
+            <span class="btn-icon">🔄</span>
+            New Game
+          </button>
+        </div>
+
+        <div class="game-info">
+          <div class="player-indicator">
+            <div class="player-badge" id="currentPlayerBadge">
+              <span class="player-color red"></span>
+              <span class="player-name">Red Player</span>
+            </div>
+            <div class="game-status" id="gameStatus">Your turn</div>
+          </div>
+        </div>
+
+        <div class="board-container">
+          <div id="hexBoard" class="hex-board"></div>
+          <div class="board-labels">
+            <div class="label-top">🔴 Red Player: Connect Top → Bottom</div>
+            <div class="label-left">🔵 Blue Player: Connect Left → Right</div>
+          </div>
+        </div>
+
+        <div id="aiExplanation" class="ai-explanation hidden">
+          <div class="explanation-header">
+            <span class="ai-icon">🤖</span>
+            <span>AI Analysis</span>
+          </div>
+          <div class="explanation-text" id="explanationText"></div>
+        </div>
+
+        <div id="winnerModal" class="winner-modal hidden">
+          <div class="modal-content">
+            <div class="winner-icon">🏆</div>
+            <h2 class="winner-title">Game Over!</h2>
+            <div class="winner-name" id="winnerName"></div>
+            <p class="winner-message" id="winnerMessage"></p>
+            <button id="playAgainBtn" class="btn btn-primary">Play Again</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <div class="info-card">
+          <h3>Hex Game Rules</h3>
+          <ul class="rules-list">
+            <li><strong>Player 1 (Red):</strong> Connects <strong>Top to Bottom</strong></li>
+            <li><strong>Player 2 (Blue):</strong> Connects <strong>Left to Right</strong></li>
+            <li>Players take turns placing one piece on empty hex cells</li>
+            <li>Once placed, pieces cannot be moved or removed</li>
+            <li>Pieces connect only through adjacent hex cells</li>
+            <li>First to form a continuous path between their sides wins!</li>
+            <li>The game cannot end in a draw</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <h3>AI Difficulty</h3>
+          <ul class="difficulty-list">
+            <li><strong>Easy:</strong> Quick decisions (Depth 2)</li>
+            <li><strong>Medium:</strong> Balanced play (Depth 4)</li>
+            <li><strong>Hard:</strong> Strategic master (Depth 5)</li>
+          </ul>
+        </div>
+
+        <div class="stats-card">
+          <h3>Game Stats</h3>
+          <div class="stat-item">
+            <span class="stat-label">Moves:</span>
+            <span class="stat-value" id="moveCount">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Board:</span>
+            <span class="stat-value" id="boardSizeDisplay">7×7</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/game.js"></script>
+</body>
+</html>
