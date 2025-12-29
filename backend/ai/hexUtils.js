@@ -17,9 +17,16 @@ export function resetGame(size = 5, difficulty = 'medium', mode = 'human-vs-ai')
 }
 
 export function makeMove(gameState, row, col, player) {
-  if (gameState.board[row] && gameState.board[row][col] === null) {
+  // Validate bounds
+  if (!gameState.board || row < 0 || row >= gameState.board.length ||
+      col < 0 || col >= gameState.board[0].length) {
+    return false;
+  }
+  
+  // Check if cell is empty
+  if (gameState.board[row][col] === null) {
     gameState.board[row][col] = player;
-    gameState.moveCount++;
+    gameState.moveCount = (gameState.moveCount || 0) + 1;
     return true;
   }
   return false;

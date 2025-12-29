@@ -39,12 +39,18 @@ export function handlePlayerMove(sessionId, row, col) {
   }
 
   // Make player move
-  makeMove(gameState, row, col, currentPlayer);
+  const moveSuccess = makeMove(gameState, row, col, currentPlayer);
+  if (!moveSuccess) {
+    return { error: 'Invalid move - cell already occupied' };
+  }
   
-  // Check for winner
-  if (checkWin(gameState.board, currentPlayer)) {
+  // Check for winner immediately after player move
+  const playerWon = checkWin(gameState.board, currentPlayer);
+  if (playerWon) {
     gameState.winner = currentPlayer;
-    gameState.currentPlayer = currentPlayer; // Keep current player for display
+    gameState.currentPlayer = currentPlayer;
+    // Log for debugging
+    console.log(`✓ Player ${currentPlayer} wins! Board state:`, JSON.stringify(gameState.board).substring(0, 100));
     return { gameState, aiExplanation: null };
   }
 
@@ -60,11 +66,21 @@ export function handlePlayerMove(sessionId, row, col) {
   
   if (aiMove) {
     const boardBefore = JSON.parse(JSON.stringify(gameState.board));
-    makeMove(gameState, aiMove.row, aiMove.col, 'blue');
+    const aiMoveSuccess = makeMove(gameState, aiMove.row, aiMove.col, 'blue');
+    
+    if (!aiMoveSuccess) {
+      console.error('AI move failed - cell already occupied');
+      gameState.currentPlayer = 'red';
+      return { gameState, aiExplanation: null };
+    }
+    
     aiExplanation = explainMove(boardBefore, gameState.board, aiMove, gameState.difficulty);
     
-    if (checkWin(gameState.board, 'blue')) {
+    // Check if AI wins
+    const aiWon = checkWin(gameState.board, 'blue');
+    if (aiWon) {
       gameState.winner = 'blue';
+      console.log('✓ AI (blue) wins!');
     } else {
       // Switch back to human player after AI move
       gameState.currentPlayer = 'red';

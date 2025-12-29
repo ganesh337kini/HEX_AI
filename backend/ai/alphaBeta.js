@@ -30,13 +30,15 @@ export function alphaBeta(board, depth, alpha, beta, maximizingPlayer, player, s
     return evaluateBoard(board, player, size);
   }
 
-  // Limit move ordering for performance on large boards
-  const movesToOrder = moves.length > 20 ? moves.slice(0, 20) : moves;
+  // Better move ordering - prioritize center and blocking moves
+  // For small boards, evaluate all moves; for larger, limit but prioritize better moves
+  const maxMovesToOrder = size <= 5 ? moves.length : Math.min(25, moves.length);
+  const movesToOrder = moves.slice(0, maxMovesToOrder);
   const orderedMoves = orderMoves(board, movesToOrder, currentPlayer, size);
   
-  // If we limited moves, append the rest
-  if (moves.length > 20) {
-    orderedMoves.push(...moves.slice(20));
+  // If we limited moves, append the rest (they'll be evaluated but less likely to be best)
+  if (moves.length > maxMovesToOrder) {
+    orderedMoves.push(...moves.slice(maxMovesToOrder));
   }
 
   if (maximizingPlayer) {

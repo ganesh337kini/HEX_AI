@@ -1,15 +1,15 @@
-import { getAvailableMoves, makeMove, checkWin } from './hexUtils.js';
+import { getAvailableMoves, checkWin } from './hexUtils.js';
 import { evaluateBoard } from './heuristic.js';
 import { alphaBeta } from './alphaBeta.js';
 
-// Get difficulty depth - optimized for performance
+// Get difficulty depth - improved for stronger AI
 function getDepth(difficulty) {
   const depths = {
-    easy: 2,      // Fast, good for beginners
-    medium: 3,    // Balanced (reduced from 4 for better performance)
-    hard: 4       // Strong (reduced from 5 for better performance)
+    easy: 3,      // Improved from 2
+    medium: 5,    // Improved from 3 - much stronger
+    hard: 7       // Improved from 4 - very strong
   };
-  return depths[difficulty] || 3;
+  return depths[difficulty] || 5;
 }
 
 // Get AI move using minimax with alpha-beta pruning
@@ -40,25 +40,48 @@ export function getAIMove(gameState) {
     }
   }
 
-  // Limit moves to evaluate for performance (especially on larger boards)
-  const maxMovesToEvaluate = size <= 5 ? moves.length : Math.min(15, moves.length);
-  const movesToEvaluate = moves.slice(0, maxMovesToEvaluate);
+  // Use iterative deepening for better move selection
+  // Evaluate all moves on small boards, limit on larger ones
+  const maxMovesToEvaluate = size <= 5 ? moves.length : Math.min(20, moves.length);
+  
+  // Pre-sort moves by heuristic for better pruning
+  const scoredMoves = moves.slice(0, maxMovesToEvaluate).map(move => {
+    const testBoard = board.map(row => [...row]);
+    testBoard[move.row][move.col] = player;
+    const score = evaluateBoard(testBoard, player, size);
+    return { ...move, score };
+  });
+  
+  scoredMoves.sort((a, b) => b.score - a.score);
+  const movesToEvaluate = scoredMoves.map(m => ({ row: m.row, col: m.col }));
 
-  // Use minimax with alpha-beta
+  // Use minimax with alpha-beta - iterative deepening approach
   let bestMove = null;
   let bestValue = -Infinity;
+  let currentDepth = Math.min(depth, 3); // Start with smaller depth
+  
+  // Iterative deepening: gradually increase depth
+  while (currentDepth <= depth && bestValue < 5000) {
+    bestValue = -Infinity;
+    for (const move of movesToEvaluate) {
+      const newBoard = board.map(row => [...row]);
+      newBoard[move.row][move.col] = player;
+      const value = alphaBeta(newBoard, currentDepth - 1, -Infinity, Infinity, false, player, size);
 
-  for (const move of movesToEvaluate) {
-    const newBoard = board.map(row => [...row]);
-    newBoard[move.row][move.col] = player;
-    const value = alphaBeta(newBoard, depth - 1, -Infinity, Infinity, false, player, size);
-
-    if (value > bestValue) {
-      bestValue = value;
-      bestMove = move;
+      if (value > bestValue) {
+        bestValue = value;
+        bestMove = move;
+      }
+      
+      // If we found a winning move, use it immediately
+      if (value > 9000) break;
     }
+    
+    // If we found a very good move or reached max depth, stop
+    if (bestValue > 9000 || currentDepth >= depth) break;
+    currentDepth += 1;
   }
 
-  return bestMove || moves[0]; // Fallback to first move
+  return bestMove || movesToEvaluate[0] || moves[0];
 }
 

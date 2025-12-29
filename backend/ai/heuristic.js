@@ -96,21 +96,65 @@ export function evaluateBoard(board, player, size) {
   if (win) return 10000;
   if (loss) return -10000;
 
-  // Path distance heuristic
+  // Path distance heuristic - improved weighting
   const myPath = shortestPathDistance(board, player, size);
   const oppPath = shortestPathDistance(board, opponent, size);
 
-  let score = (oppPath - myPath) * 10;
+  // More aggressive scoring - path difference is crucial
+  let score = (oppPath - myPath) * 15; // Increased from 10
 
-  // Add central control and blocking bonuses
+  // Count connected pieces - more connections = stronger position
+  let myConnections = 0;
+  let oppConnections = 0;
+  
   for (let row = 0; row < size; row++) {
     for (let col = 0; col < size; col++) {
       if (board[row][col] === player) {
-        score += centralControl(row, col, size) * 2;
-        score += blockingScore(board, row, col, opponent, size);
+        const neighbors = getNeighbors(row, col, size);
+        for (const [nr, nc] of neighbors) {
+          if (board[nr] && board[nr][nc] === player) {
+            myConnections++;
+          }
+        }
+        score += centralControl(row, col, size) * 3; // Increased from 2
+        score += blockingScore(board, row, col, opponent, size) * 2; // Increased weight
+      } else if (board[row][col] === opponent) {
+        const neighbors = getNeighbors(row, col, size);
+        for (const [nr, nc] of neighbors) {
+          if (board[nr] && board[nr][nc] === opponent) {
+            oppConnections++;
+          }
+        }
       }
     }
   }
+  
+  // Connection bonus - having more connected pieces is better
+  score += (myConnections - oppConnections) * 0.5;
+  
+  // Edge control bonus - controlling edges helps win
+  let myEdgeControl = 0;
+  let oppEdgeControl = 0;
+  
+  if (player === 'red') {
+    // Top and bottom edges for red
+    for (let col = 0; col < size; col++) {
+      if (board[0][col] === player) myEdgeControl++;
+      if (board[size - 1][col] === player) myEdgeControl++;
+      if (board[0][col] === opponent) oppEdgeControl++;
+      if (board[size - 1][col] === opponent) oppEdgeControl++;
+    }
+  } else {
+    // Left and right edges for blue
+    for (let row = 0; row < size; row++) {
+      if (board[row][0] === player) myEdgeControl++;
+      if (board[row][size - 1] === player) myEdgeControl++;
+      if (board[row][0] === opponent) oppEdgeControl++;
+      if (board[row][size - 1] === opponent) oppEdgeControl++;
+    }
+  }
+  
+  score += (myEdgeControl - oppEdgeControl) * 2;
 
   return score;
 }
